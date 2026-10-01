@@ -1,0 +1,1 @@
+const test=require('node:test'),assert=require('node:assert/strict'); test('project smoke',()=>{assert.ok(require('../src/app'))});

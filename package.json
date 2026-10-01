@@ -1,0 +1,6 @@
+{
+  "name":"finance-manager","version":"1.0.0","private":true,"type":"commonjs",
+  "scripts":{"start":"node src/app.js","dev":"node --watch src/app.js","migrate":"node scripts/migrate.js","seed":"node scripts/seed.js","test":"node --test tests/*.test.js"},
+  "dependencies":{"argon2":"^0.41.1","bootstrap":"^5.3.8","bootstrap-icons":"^1.13.1","chart.js":"^4.5.0","connect-pg-simple":"^10.0.0","cookie-parser":"^1.4.7","dotenv":"^16.6.1","ejs":"^3.1.10","exceljs":"^4.4.0","express":"^5.1.0","express-rate-limit":"^8.1.0","express-session":"^1.18.2","gridstack":"^12.3.3","helmet":"^8.1.0","multer":"^2.0.2","nodemailer":"^7.0.6","pdfkit":"^0.17.2","pg":"^8.16.3","uuid":"^11.1.0"},
+  "devDependencies":{"supertest":"^7.1.4"}
+}

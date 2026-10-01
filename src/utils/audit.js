@@ -1,0 +1,1 @@
+const db=require('../config/db'); module.exports=async(req,action,entity_type=null,entity_id=null,changes=null)=>{try{await db.query('INSERT INTO audit_logs(user_id,action,entity_type,entity_id,changes,ip) VALUES($1,$2,$3,$4,$5,$6)',[req.session?.user?.id||null,action,entity_type,entity_id,changes,req.ip])}catch(e){console.error('audit',e.message)}};

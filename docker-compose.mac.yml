@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: finance_manager
+      POSTGRES_USER: finance
+      POSTGRES_PASSWORD: finance_dev_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U finance -d finance_manager"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+  app:
+    build: .
+    ports: ["3000:3000"]
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
+  mailpit:
+    image: axllent/mailpit:latest
+    ports: ["8025:8025"]
+volumes:
+  postgres_data:
+  uploads_data:

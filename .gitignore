@@ -1,0 +1,10 @@
+node_modules/
+.env
+uploads/*
+!uploads/.gitkeep
+*.log
+.DS_Store
+coverage/
+finance-manager-backup.dump
+finance-manager-backup.sql
+uploads-backup.tar.gz

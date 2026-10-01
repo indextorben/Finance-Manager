@@ -1,0 +1,10 @@
+node_modules
+npm-debug.log*
+.env
+.git
+.gitignore
+uploads/*
+!uploads/.gitkeep
+*.zip
+.DS_Store
+coverage
