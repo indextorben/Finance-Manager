@@ -1,0 +1,6 @@
+<div class="vstack gap-3">
+  <div><label class="form-label">Name</label><input class="form-control" name="name" maxlength="120" value="<%= category.name||'' %>" placeholder="z. B. Lebensmittel" required></div>
+  <div><label class="form-label">Verwendung</label><select class="form-select" name="kind"><option value="expense" <%= category.kind==='expense'?'selected':'' %>>Nur Ausgaben</option><option value="income" <%= category.kind==='income'?'selected':'' %>>Nur Einnahmen</option><option value="both" <%= category.kind==='both'?'selected':'' %>>Einnahmen und Ausgaben</option></select></div>
+  <div><label class="form-label d-block">Farbe</label><div class="d-flex align-items-center gap-3"><input class="form-control form-control-color" type="color" name="color" value="<%= category.display_color||category.color||'#2563eb' %>" title="Farbe auswählen" required><span class="text-secondary small">Klicken, um eine eigene Farbe auszuwählen.</span></div></div>
+  <div><label class="form-label">Symbol</label><select class="form-select" name="icon"><% icons.forEach(([value,label])=>{ %><option value="<%= value %>" <%= (category.display_icon||category.icon)==value?'selected':'' %>><%= label %></option><% }) %></select><div class="form-text">Das Symbol erscheint bei der Kategorie und hilft beim schnellen Wiedererkennen.</div></div>
+</div>

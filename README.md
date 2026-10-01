@@ -50,6 +50,12 @@ Restore in eine leere Datenbank:
 cat finance-backup.sql | docker compose exec -T db psql -U finance -d finance_manager
 ```
 
+## Automatische Update-Prüfung
+
+Der Finance Manager prüft nach dem Start und anschließend standardmäßig alle sechs Stunden den Branch `main` des konfigurierten GitHub-Repositories. Administratoren sehen unter **Updates** den installierten und den neuesten Commit. Wenn eine neue Version verfügbar ist, erscheint zusätzlich ein Hinweis in der Kopfzeile.
+
+Die Prüfung wird über `UPDATE_REPO`, `UPDATE_BRANCH` und `UPDATE_CHECK_INTERVAL_MINUTES` konfiguriert. Für private Repositories kann ein GitHub-Token mit reinen Leserechten als `GITHUB_TOKEN` hinterlegt werden. Updates werden bewusst nicht unbeaufsichtigt installiert; die Update-Seite zeigt die sicheren Befehle zum Aktualisieren des Docker-Deployments.
+
 ## Entwicklung
 
 Die Anwendung verwendet Argon2id, serverseitige Sessions in PostgreSQL, CSRF-Prüfung, Helmet/CSP, Rate Limiting, parametrisierte SQL-Abfragen und geschützte Upload-Routen. Vor einem öffentlichen Produktivbetrieb müssen Secrets ersetzt, HTTPS aktiviert, Berechtigungen geprüft und vollständige E2E-/Security-Tests durchgeführt werden.

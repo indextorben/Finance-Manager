@@ -1,0 +1,33 @@
+<%- include('partials/head') %><%- include('partials/nav') %>
+<% const kindLabels={income:'Einnahmen',expense:'Ausgaben',both:'Einnahmen & Ausgaben'}; %>
+<div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+  <div><div class="eyebrow">Organisation</div><h1>Kategorien</h1><p class="text-secondary mb-0">Ordne deinen Buchungen Farben und leicht erkennbare Symbole zu.</p></div>
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newCategoryModal"><i class="bi bi-plus-lg me-1"></i>Kategorie anlegen</button>
+</div>
+<div class="d-flex flex-wrap gap-2 mb-4">
+  <span class="badge rounded-pill text-bg-light border px-3 py-2"><%= rows.filter(r=>!r.archived).length %> aktiv</span>
+  <% if(rows.some(r=>r.archived)){ %><span class="badge rounded-pill text-bg-light border px-3 py-2"><%= rows.filter(r=>r.archived).length %> pausiert</span><% } %>
+</div>
+<div class="row g-3">
+  <% rows.forEach(r=>{ %>
+  <div class="col-md-6 col-xl-4">
+    <div class="card h-100 <%= r.archived?'opacity-75':'' %>" style="border-left:5px solid <%= r.display_color %>">
+      <div class="card-body">
+        <div class="d-flex align-items-start gap-3">
+          <span class="rounded-3 d-inline-grid place-items-center flex-shrink-0" style="display:grid;width:46px;height:46px;place-items:center;background:<%= r.display_color %>20;color:<%= r.display_color %>"><i class="bi bi-<%= r.display_icon %> fs-4"></i></span>
+          <div class="flex-grow-1 min-width-0"><h2 class="h5 mb-1"><%= r.name %></h2><div class="small text-secondary"><%= kindLabels[r.kind]||r.kind %></div><div class="d-flex align-items-center gap-2 mt-2"><span class="rounded-circle border" style="width:14px;height:14px;background:<%= r.display_color %>"></span><code class="small"><%= r.display_color.toUpperCase() %></code></div></div>
+          <% if(r.archived){ %><span class="badge text-bg-secondary">Pausiert</span><% } %>
+        </div>
+      </div>
+      <div class="card-footer bg-transparent d-flex gap-2">
+        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editCategory<%= r.id %>"><i class="bi bi-pencil me-1"></i>Bearbeiten</button>
+        <form method="post" action="/categories/<%= r.id %>/toggle"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-sm btn-outline-secondary"><i class="bi bi-<%= r.archived?'play':'pause' %>-circle me-1"></i><%= r.archived?'Aktivieren':'Pausieren' %></button></form>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="editCategory<%= r.id %>"><div class="modal-dialog"><form method="post" action="/categories/<%= r.id %>/update" class="modal-content"><div class="modal-header"><h5>Kategorie bearbeiten</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" name="_csrf" value="<%= csrf %>"><%- include('partials/category-fields',{category:r,icons}) %></div><div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Abbrechen</button><button class="btn btn-primary">Änderungen speichern</button></div></form></div></div>
+  <% }) %>
+  <% if(!rows.length){ %><div class="col-12"><div class="card card-body text-center py-5 text-secondary"><i class="bi bi-palette fs-1 mb-2"></i><p class="mb-3">Noch keine Kategorien vorhanden.</p><div><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newCategoryModal">Erste Kategorie anlegen</button></div></div></div><% } %>
+</div>
+<div class="modal fade" id="newCategoryModal"><div class="modal-dialog"><form method="post" action="/categories" class="modal-content"><div class="modal-header"><h5>Neue Kategorie</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" name="_csrf" value="<%= csrf %>"><%- include('partials/category-fields',{category:{name:'',kind:'expense',color:'#2563eb',icon:'tag'},icons}) %></div><div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Abbrechen</button><button class="btn btn-primary">Kategorie speichern</button></div></form></div></div>
+<%- include('partials/foot') %>

@@ -3,6 +3,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --omit=dev
 COPY . .
+ARG APP_COMMIT=unknown
+RUN node -e "require('fs').writeFileSync('.build-info.json',JSON.stringify({commit:process.env.APP_COMMIT,builtAt:new Date().toISOString()}))"
 RUN mkdir -p uploads && chown -R node:node /app
 USER node
 EXPOSE 3000

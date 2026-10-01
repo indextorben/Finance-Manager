@@ -14,7 +14,10 @@ services:
       retries: 15
 
   app:
-    build: .
+    build:
+      context: .
+      args:
+        APP_COMMIT: ${APP_COMMIT:-unknown}
     ports:
       - "100.124.79.68:8766:3000"
     env_file: .env
