@@ -2,6 +2,82 @@
 
 Diese Anleitung beschreibt den üblichen Ablauf, um lokale Änderungen im Finance-Manager-Repository zu prüfen, zu committen und auf den Branch `main` bei GitHub zu pushen.
 
+## Projektordner mit dem Repository aktualisieren
+
+Mit diesen Schritten wird der lokale Projektordner auf den aktuellen Stand von `origin/main` gebracht.
+
+### 1. Projektordner öffnen
+
+```bash
+cd /pfad/zum/Finance-Manager
+```
+
+### 2. Lokalen Status prüfen
+
+```bash
+git status
+```
+
+Wenn keine lokalen Änderungen vorhanden sind, kann der aktuelle Stand direkt heruntergeladen werden.
+
+### 3. Änderungen vom Repository übernehmen
+
+```bash
+git pull --ff-only origin main
+```
+
+`--ff-only` verhindert, dass Git beim Pull automatisch einen unerwarteten Merge-Commit erstellt.
+
+### 4. Aktualisierung kontrollieren
+
+```bash
+git status
+git log -1 --oneline --decorate
+```
+
+Der lokale Branch sollte anschließend mit `origin/main` übereinstimmen.
+
+### Kompakter Pull-Ablauf
+
+```bash
+cd /pfad/zum/Finance-Manager
+git status
+git pull --ff-only origin main
+git log -1 --oneline --decorate
+```
+
+### Falls lokale Änderungen vorhanden sind
+
+Lokale Änderungen sollten vor dem Pull entweder committet oder vorübergehend gesichert werden.
+
+Änderungen zuerst committen:
+
+```bash
+git add DATEINAME
+git commit -m "Beschreibung der lokalen Änderung"
+git pull --rebase origin main
+```
+
+Alternativ Änderungen vorübergehend sichern:
+
+```bash
+git stash push -m "Lokale Änderungen vor Pull"
+git pull --ff-only origin main
+git stash pop
+```
+
+Nach `git stash pop` können Konflikte auftreten, wenn lokal und im Repository dieselben Stellen geändert wurden. Diese Konflikte müssen vor dem nächsten Commit manuell gelöst werden.
+
+### Docker-Anwendung nach dem Pull aktualisieren
+
+Ein Pull aktualisiert nur die Dateien im Projektordner. Damit der laufende Docker-Container die neue Version verwendet, anschließend ausführen:
+
+```bash
+APP_COMMIT=$(git rev-parse HEAD) sudo docker compose up -d --build app
+```
+
+Weitere Hinweise dazu stehen in [PI-UPDATE.md](PI-UPDATE.md).
+
 ## 1. Projektordner öffnen
 
 Im Terminal in den Projektordner wechseln:
