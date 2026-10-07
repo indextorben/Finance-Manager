@@ -1,0 +1,69 @@
+<%- include('partials/head') %>
+<%- include('partials/nav') %>
+
+<div class="page-header mb-4">
+  <div class="eyebrow">Prüfung</div>
+  <h1>Möglicher doppelter Eintrag</h1>
+  <p class="text-secondary mb-0"><%= tx.type==='income'?'Diese Einnahme':'Diese Ausgabe' %> stimmt mit <%= matches.length===1?'einem bereits erfassten Eintrag':matches.length+' bereits erfassten Einträgen' %> in Datum, Beschreibung und Betrag überein.</p>
+</div>
+
+<div class="alert alert-warning d-flex gap-3 align-items-start">
+  <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+  <div>
+    <strong>Bitte prüfen, ob es sich um eine Doppelerfassung handelt.</strong>
+    <div class="small">Nichts wurde gespeichert. Du kannst den Eintrag trotzdem speichern, falls er tatsächlich zweimal vorkommt.</div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-body">
+        <h2 class="h6 text-secondary text-uppercase small fw-bold mb-3">Dein Eintrag</h2>
+        <dl class="row mb-0">
+          <dt class="col-5 fw-normal text-secondary">Typ</dt>
+          <dd class="col-7"><span class="badge text-bg-<%= tx.type==='income'?'success':'danger' %>"><%= tx.type==='income'?'Einnahme':'Ausgabe' %></span></dd>
+          <dt class="col-5 fw-normal text-secondary">Datum</dt>
+          <dd class="col-7"><%= new Date(tx.tx_date).toLocaleDateString('de-DE') %></dd>
+          <dt class="col-5 fw-normal text-secondary">Beschreibung</dt>
+          <dd class="col-7"><%= tx.description %></dd>
+          <dt class="col-5 fw-normal text-secondary">Betrag</dt>
+          <dd class="col-7 fw-bold"><%= money(tx.gross) %> €</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-body pb-0">
+        <h2 class="h6 text-secondary text-uppercase small fw-bold mb-0">Bereits vorhanden (<%= matches.length %>)</h2>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead><tr><th>Datum</th><th>Beschreibung</th><th class="text-end">Betrag</th><th>Status</th><th>Erfasst am</th></tr></thead>
+          <tbody>
+            <% matches.forEach(m=>{ %>
+              <tr>
+                <td><%= new Date(m.tx_date_input).toLocaleDateString('de-DE') %></td>
+                <td><%= m.description %></td>
+                <td class="text-end fw-bold"><%= money(m.gross_amount) %> €</td>
+                <td><%= ({paid:'Bezahlt',open:'Offen',overdue:'Überfällig',draft:'Entwurf',cancelled:'Storniert'})[m.status]||m.status %></td>
+                <td class="text-secondary small"><%= m.created %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<form method="post" action="<%= action %>" class="mt-4 d-flex flex-wrap gap-2">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <% fields.forEach(([key,value])=>{ %><input type="hidden" name="<%= key %>" value="<%= value %>"><% }) %>
+  <input type="hidden" name="confirm_duplicate" value="1">
+  <button class="btn btn-warning"><i class="bi bi-check2 me-1"></i>Trotzdem speichern</button>
+  <a class="btn btn-outline-secondary" href="<%= backTo %>">Abbrechen</a>
+</form>
+
+<%- include('partials/foot') %>

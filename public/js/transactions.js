@@ -13,8 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('#editTypeDisplay').value = data.type;
     document.querySelector('#editDate').value = data.date;
     document.querySelector('#editDescription').value = data.description;
-    document.querySelector('#editNet').value = data.net;
-    document.querySelector('#editTax').value = data.tax;
+    const amount = value => window.FinanceForms ? window.FinanceForms.formatAmount(value) : value;
+    document.querySelector('#editNet').value = amount(data.net);
+    document.querySelector('#editTax').value = amount(data.tax);
     document.querySelector('#editScope').value = data.scope;
     document.querySelector('#editStatus').value = data.status;
     const account = document.querySelector('#editAccount');

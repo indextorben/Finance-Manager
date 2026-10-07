@@ -1,5 +1,14 @@
 <%- include('partials/head') %>
 <%- include('partials/nav') %>
+<%
+  const basePath = section==='income'?'/income':section==='expense'?'/expenses':'/transactions';
+  const sortLink = dir => {
+    const p = new URLSearchParams();
+    for(const [k,v] of Object.entries(filter||{})) if(k!=='sort'&&k!=='page'&&v) p.set(k,v);
+    p.set('sort',dir);
+    return basePath+'?'+p.toString();
+  };
+%>
 
 <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
   <div>
@@ -10,8 +19,25 @@
   <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#txModal"><i class="bi bi-plus-lg me-1"></i><%= section==='income'?'Einnahme hinzufügen':section==='expense'?'Ausgabe hinzufügen':'Transaktion hinzufügen' %></button>
 </div>
 
+<% if(dupInfo.groups){ %>
+  <div class="alert alert-warning d-flex flex-wrap align-items-center gap-3 mb-3">
+    <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+    <div class="flex-grow-1">
+      <strong><%= dupInfo.items %> <%= section==='income'?'Einnahmen':section==='expense'?'Ausgaben':'Transaktionen' %> sehen wie Duplikate aus</strong>
+      <div class="small"><%= dupInfo.groups===1?'Ein Eintrag kommt':dupInfo.groups+' Einträge kommen' %> mehrfach mit gleichem Datum, gleicher Beschreibung und gleichem Betrag vor.</div>
+    </div>
+    <% if(filter.duplicates==='1'){ %>
+      <a class="btn btn-sm btn-outline-secondary" href="<%= basePath %>">Alle anzeigen</a>
+    <% } else { %>
+      <a class="btn btn-sm btn-warning" href="<%= basePath %>?duplicates=1">Duplikate anzeigen</a>
+    <% } %>
+  </div>
+<% } %>
+
 <form class="card card-body mb-3">
   <div class="row g-2">
+    <input type="hidden" name="sort" value="<%= sort %>">
+    <% if(filter.duplicates==='1'){ %><input type="hidden" name="duplicates" value="1"><% } %>
     <div class="col-md-4"><input class="form-control" name="q" value="<%= filter.q||'' %>" placeholder="Suchen…"></div>
     <% if(section==='all'){ %>
       <div class="col"><select class="form-select" name="type"><option value="">Alle Typen</option><option value="income" <%= filter.type==='income'?'selected':'' %>>Einnahme</option><option value="expense" <%= filter.type==='expense'?'selected':'' %>>Ausgabe</option></select></div>
@@ -20,20 +46,20 @@
     <% } %>
     <div class="col"><select class="form-select" name="scope"><option value="">Privat + Geschäftlich</option><option value="private" <%= filter.scope==='private'?'selected':'' %>>Privat</option><option value="business" <%= filter.scope==='business'?'selected':'' %>>Geschäftlich</option></select></div>
     <div class="col-auto"><button class="btn btn-outline-primary">Filtern</button></div>
-    <div class="col-auto"><a class="btn btn-outline-secondary" href="<%= section==='income'?'/income':section==='expense'?'/expenses':'/transactions' %>">Zurücksetzen</a></div>
+    <div class="col-auto"><a class="btn btn-outline-secondary" href="<%= basePath %>">Zurücksetzen</a></div>
   </div>
 </form>
 
 <div class="card">
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0">
-      <thead><tr><th>Datum</th><th>Typ</th><th>Beschreibung</th><th>Kategorie</th><th>Konto</th><th class="text-end">Betrag</th><th>Status</th><th><span class="visually-hidden">Aktionen</span></th></tr></thead>
+      <thead><tr><th><a class="text-decoration-none text-reset d-inline-flex align-items-center gap-1" href="<%= sortLink(sort==='asc'?'desc':'asc') %>" title="<%= sort==='asc'?'Neueste zuerst':'Älteste zuerst' %>" aria-label="Nach Datum sortieren – <%= sort==='asc'?'neueste zuerst':'älteste zuerst' %>">Datum <i class="bi bi-caret-<%= sort==='asc'?'up':'down' %>-fill small"></i></a></th><th>Typ</th><th>Beschreibung</th><th>Kategorie</th><th>Konto</th><th class="text-end">Betrag</th><th>Status</th><th><span class="visually-hidden">Aktionen</span></th></tr></thead>
       <tbody>
         <% rows.forEach(r=>{ %>
           <tr>
             <td><%= new Date(r.tx_date).toLocaleDateString('de-DE') %></td>
             <td><span class="badge text-bg-<%= r.type==='income'?'success':'danger' %>"><%= r.type==='income'?'Einnahme':'Ausgabe' %></span></td>
-            <td><strong><%= r.description %></strong><div class="small text-secondary"><%= r.scope==='business'?'Geschäftlich':'Privat' %></div></td>
+            <td><strong><%= r.description %></strong><% if(dupKeys.has(dupKey(r))){ %> <span class="badge text-bg-warning" title="Gleiches Datum, gleiche Beschreibung und gleicher Betrag wie ein anderer Eintrag"><i class="bi bi-exclamation-triangle-fill me-1"></i>Mögliches Duplikat</span><% } %><div class="small text-secondary"><%= r.scope==='business'?'Geschäftlich':'Privat' %></div></td>
             <td><%= r.category||'—' %></td>
             <td><%= r.account||'—' %></td>
             <td class="text-end fw-bold"><%= money(r.gross_amount) %> €</td>
@@ -46,7 +72,7 @@
             </td>
           </tr>
         <% }) %>
-        <% if(!rows.length){ %><tr><td colspan="8" class="text-center py-5 text-secondary">Noch keine Transaktionen vorhanden.</td></tr><% } %>
+        <% if(!rows.length){ %><tr><td colspan="8" class="text-center py-5 text-secondary"><%= filter.duplicates==='1'?'Keine möglichen Duplikate gefunden.':'Noch keine Transaktionen vorhanden.' %></td></tr><% } %>
       </tbody>
     </table>
   </div>
@@ -67,11 +93,11 @@
           <div class="col-md-4"><label class="form-label" for="editDate">Datum</label><input type="date" name="tx_date" id="editDate" class="form-control" required></div>
           <div class="col-md-4"><label class="form-label" for="editScope">Bereich</label><select name="scope" id="editScope" class="form-select"><option value="private">Privat</option><option value="business">Geschäftlich</option></select></div>
           <div class="col-12"><label class="form-label" for="editDescription">Beschreibung</label><input name="description" id="editDescription" class="form-control" required></div>
-          <div class="col-md-4"><label class="form-label" for="editNet">Netto</label><input name="net_amount" id="editNet" type="number" step="0.01" min="0" class="form-control" required></div>
-          <div class="col-md-4"><label class="form-label" for="editTax">Steuer</label><input name="tax_amount" id="editTax" type="number" step="0.01" min="0" class="form-control" required></div>
+          <div class="col-md-4"><label class="form-label" for="editNet">Netto</label><div class="input-group"><input name="net_amount" id="editNet" class="form-control" data-money data-min-amount="0" required><span class="input-group-text">€</span></div></div>
+          <div class="col-md-4"><label class="form-label" for="editTax">Steuer</label><div class="input-group"><input name="tax_amount" id="editTax" class="form-control" data-money data-min-amount="0" required><span class="input-group-text">€</span></div></div>
           <div class="col-md-4"><label class="form-label" for="editStatus">Status</label><select name="status" id="editStatus" class="form-select"><option value="paid">Bezahlt</option><option value="open">Offen</option><option value="overdue">Überfällig</option><option value="draft">Entwurf</option><option value="cancelled">Storniert</option></select></div>
-          <div class="col-md-6"><label class="form-label" for="editAccount">Konto</label><select name="account_id" id="editAccount" class="form-select"><option value="">—</option><% accounts.forEach(x=>{ %><option value="<%= x.id %>"><%= x.name %></option><% }) %></select></div>
-          <div class="col-md-6"><label class="form-label" for="editCategory">Kategorie</label><select name="category_id" id="editCategory" class="form-select"><option value="">—</option><% categories.forEach(x=>{ %><option value="<%= x.id %>"><%= x.name %></option><% }) %></select></div>
+          <div class="col-md-6"><label class="form-label" for="editAccount">Konto</label><select name="account_id" id="editAccount" class="form-select" <%= accounts.length?'required':'' %>><option value="" <%= accounts.length?'disabled':'' %>><%= accounts.length?'Bitte auswählen':'—' %></option><% accounts.forEach(x=>{ %><option value="<%= x.id %>"><%= x.name %></option><% }) %></select><% if(!accounts.length){ %><div class="form-text">Noch kein Konto vorhanden – <a href="/accounts">zuerst ein Konto anlegen</a>.</div><% } %></div>
+          <div class="col-md-6"><label class="form-label" for="editCategory">Kategorie</label><select name="category_id" id="editCategory" class="form-select" <%= categories.length?'required':'' %>><option value="" <%= categories.length?'disabled':'' %>><%= categories.length?'Bitte auswählen':'—' %></option><% categories.forEach(x=>{ %><option value="<%= x.id %>"><%= x.name %></option><% }) %></select><% if(!categories.length){ %><div class="form-text">Noch keine Kategorie vorhanden – <a href="/categories">zuerst eine Kategorie anlegen</a>.</div><% } %></div>
           <div class="col-12 form-check ms-2"><input class="form-check-input" type="checkbox" name="tax_relevant" id="editTaxRelevant"><label class="form-check-label" for="editTaxRelevant">Steuerlich relevant</label></div>
         </div>
       </div>
@@ -90,12 +116,12 @@
           <div class="col-md-4"><label class="form-label">Typ</label><select name="type" class="form-select" <%= section!=='all'?'disabled':'' %>><option value="expense" <%= section==='expense'?'selected':'' %>>Ausgabe</option><option value="income" <%= section==='income'?'selected':'' %>>Einnahme</option></select><% if(section!=='all'){ %><input type="hidden" name="type" value="<%= section %>"><input type="hidden" name="return_to" value="<%= section %>"><% } %></div>
           <div class="col-md-4"><label class="form-label">Datum</label><input type="date" name="tx_date" class="form-control" required></div>
           <div class="col-md-4"><label class="form-label">Bereich</label><select name="scope" class="form-select"><option value="private">Privat</option><option value="business">Geschäftlich</option></select></div>
-          <div class="col-12"><label class="form-label">Beschreibung</label><input name="description" class="form-control" required></div>
-          <div class="col-md-4"><label class="form-label">Netto</label><input name="net_amount" type="number" step="0.01" min="0" class="form-control" required></div>
-          <div class="col-md-4"><label class="form-label">Steuer</label><input name="tax_amount" type="number" step="0.01" min="0" value="0" class="form-control"></div>
+          <div class="col-12"><label class="form-label" for="newDescription">Beschreibung</label><input name="description" id="newDescription" class="form-control" placeholder="z. B. Wocheneinkauf" maxlength="200" required></div>
+          <div class="col-md-4"><label class="form-label" for="newNet">Netto</label><div class="input-group"><input name="net_amount" id="newNet" class="form-control" data-money data-min-amount="0" placeholder="0,00" required><span class="input-group-text">€</span></div><div class="form-text">Tausenderpunkte werden automatisch gesetzt – für Cent einfach Komma tippen.</div></div>
+          <div class="col-md-4"><label class="form-label" for="newTax">Steuer</label><div class="input-group"><input name="tax_amount" id="newTax" class="form-control" data-money data-min-amount="0" value="0,00" required><span class="input-group-text">€</span></div></div>
           <div class="col-md-4"><label class="form-label">Status</label><select name="status" class="form-select"><option value="paid">Bezahlt</option><option value="open">Offen</option><option value="overdue">Überfällig</option></select></div>
-          <div class="col-md-6"><label class="form-label">Konto</label><select name="account_id" class="form-select"><option value="">—</option><% accounts.forEach(x=>{ %><option value="<%= x.id %>"><%= x.name %></option><% }) %></select></div>
-          <div class="col-md-6"><label class="form-label">Kategorie</label><select name="category_id" class="form-select"><option value="">—</option><% categories.forEach(x=>{ %><option value="<%= x.id %>"><%= x.name %></option><% }) %></select></div>
+          <div class="col-md-6"><label class="form-label" for="newAccount">Konto</label><select name="account_id" id="newAccount" class="form-select" <%= accounts.length?'required':'' %>><option value="" <%= accounts.length?'disabled':'' %> selected><%= accounts.length?'Bitte auswählen':'—' %></option><% accounts.forEach(x=>{ %><option value="<%= x.id %>"><%= x.name %></option><% }) %></select><% if(!accounts.length){ %><div class="form-text">Noch kein Konto vorhanden – <a href="/accounts">zuerst ein Konto anlegen</a>.</div><% } %></div>
+          <div class="col-md-6"><label class="form-label" for="newCategory">Kategorie</label><select name="category_id" id="newCategory" class="form-select" <%= categories.length?'required':'' %>><option value="" <%= categories.length?'disabled':'' %> selected><%= categories.length?'Bitte auswählen':'—' %></option><% categories.forEach(x=>{ %><option value="<%= x.id %>"><%= x.name %></option><% }) %></select><% if(!categories.length){ %><div class="form-text">Noch keine Kategorie vorhanden – <a href="/categories">zuerst eine Kategorie anlegen</a>.</div><% } %></div>
           <div class="col-12 form-check ms-2"><input class="form-check-input" type="checkbox" name="tax_relevant" id="taxRel"><label class="form-check-label" for="taxRel">Steuerlich relevant</label></div>
         </div>
       </div>
