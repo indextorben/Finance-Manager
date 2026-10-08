@@ -1,1 +1,2 @@
-<datalist id="descriptionSuggestions"><% (locals.descriptions||[]).forEach(d=>{ %><option value="<%= d %>"></option><% }) %></datalist>
+<%# Vorschläge für die Beschreibung – data-category merkt sich die zuletzt genutzte Kategorie. %>
+<datalist id="descriptionSuggestions"><% (locals.descriptions||[]).forEach(d=>{ %><option value="<%= d.description %>"<%- d.category_id?` data-category="${String(d.category_id).replace(/[^0-9a-fA-F-]/g,'')}"`:'' %>></option><% }) %></datalist>
