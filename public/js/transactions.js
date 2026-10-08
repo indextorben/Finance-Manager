@@ -23,8 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
     [account, category].forEach(select => select.querySelectorAll('[data-current-archived]').forEach(option => option.remove()));
     if (data.account && !account.querySelector(`option[value="${CSS.escape(data.account)}"]`)) account.add(new Option(`${data.accountName} (archiviert)`, data.account, true, true)).dataset.currentArchived = 'true';
     if (data.category && !category.querySelector(`option[value="${CSS.escape(data.category)}"]`)) category.add(new Option(`${data.categoryName} (archiviert)`, data.category, true, true)).dataset.currentArchived = 'true';
-    account.value = data.account;
-    category.value = data.category;
+    account.value = data.account || account.dataset.mainAccount || '';
+    category.value = data.category || '';
     document.querySelector('#editTaxRelevant').checked = data.taxRelevant === 'true';
   });
 });

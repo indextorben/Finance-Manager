@@ -1,0 +1,17 @@
+<%
+  const selectId = locals.id || 'categorySelect';
+  const selectedId = locals.selected || '';
+  const newId = selectId + 'New';
+%>
+<label class="form-label" for="<%= selectId %>">Kategorie <span class="text-secondary">(optional)</span></label>
+<div data-category-field>
+  <select name="category_id" id="<%= selectId %>" class="form-select" data-category-select>
+    <option value="" <%= selectedId?'':'selected' %>>Ohne Kategorie</option>
+    <% categories.forEach(x=>{ %><option value="<%= x.id %>" <%= x.id===selectedId?'selected':'' %>><%= x.name %></option><% }) %>
+    <option value="__new">+ Neue Kategorie anlegen …</option>
+  </select>
+  <div class="mt-2 d-none" data-category-new>
+    <input class="form-control" type="text" name="new_category" id="<%= newId %>" maxlength="120" autocomplete="off" placeholder="Name der neuen Kategorie" data-field-label="Neue Kategorie" disabled>
+    <div class="form-text">Die Kategorie wird beim Speichern angelegt – Farbe und Symbol lassen sich später unter <a href="/categories">Kategorien</a> anpassen.</div>
+  </div>
+</div>
