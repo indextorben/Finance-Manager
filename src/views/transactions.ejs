@@ -2,12 +2,19 @@
 <%- include('partials/nav') %>
 <%
   const basePath = section==='income'?'/income':section==='expense'?'/expenses':'/transactions';
-  const sortLink = dir => {
+  const linkWith = changes => {
     const p = new URLSearchParams();
-    for(const [k,v] of Object.entries(filter||{})) if(k!=='sort'&&k!=='page'&&v) p.set(k,v);
-    p.set('sort',dir);
-    return basePath+'?'+p.toString();
+    for(const [k,v] of Object.entries(filter||{})) if(k!=='page'&&v) p.set(k,v);
+    for(const [k,v] of Object.entries(changes)) { if(v===null||v==='') p.delete(k); else p.set(k,v); }
+    const qs = p.toString();
+    return basePath+(qs?'?'+qs:'');
   };
+  const sortLink = dir => linkWith({sort:dir, page:null});
+  const pageLink = n => linkWith({sort, page:n});
+  const monthNames = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  const monthLabel = m => monthNames[+m.slice(5,7)-1]+' '+m.slice(0,4);
+  const first = total ? offset+1 : 0;
+  const last = offset + rows.length;
 %>
 
 <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
@@ -45,6 +52,8 @@
       <input type="hidden" name="type" value="<%= section %>"><input type="hidden" name="view" value="<%= section %>">
     <% } %>
     <div class="col"><select class="form-select" name="scope"><option value="">Privat + Geschäftlich</option><option value="private" <%= filter.scope==='private'?'selected':'' %>>Privat</option><option value="business" <%= filter.scope==='business'?'selected':'' %>>Geschäftlich</option></select></div>
+    <div class="col"><select class="form-select" name="month" aria-label="Monat"><option value="">Alle Monate</option><% months.forEach(m=>{ %><option value="<%= m.m %>" <%= month===m.m?'selected':'' %>><%= monthLabel(m.m) %> (<%= m.n %>)</option><% }) %></select></div>
+    <div class="col"><select class="form-select" name="per" aria-label="Einträge pro Seite"><option value="25" <%= per==='25'?'selected':'' %>>25 pro Seite</option><option value="50" <%= per==='50'?'selected':'' %>>50 pro Seite</option><option value="100" <%= per==='100'?'selected':'' %>>100 pro Seite</option><option value="all" <%= per==='all'?'selected':'' %>>Alle anzeigen</option></select></div>
     <div class="col-auto"><button class="btn btn-outline-primary">Filtern</button></div>
     <div class="col-auto"><a class="btn btn-outline-secondary" href="<%= basePath %>">Zurücksetzen</a></div>
   </div>
@@ -72,11 +81,30 @@
             </td>
           </tr>
         <% }) %>
-        <% if(!rows.length){ %><tr><td colspan="8" class="text-center py-5 text-secondary"><%= filter.duplicates==='1'?'Keine möglichen Duplikate gefunden.':'Noch keine Transaktionen vorhanden.' %></td></tr><% } %>
+        <% if(!rows.length){ %><tr><td colspan="8" class="text-center py-5 text-secondary"><%= filter.duplicates==='1'?'Keine möglichen Duplikate gefunden.':(month?'Keine Transaktionen im '+monthLabel(month)+'.':(filter.q||filter.type||filter.scope?'Keine Transaktionen passen zu diesem Filter.':'Noch keine Transaktionen vorhanden.')) %></td></tr><% } %>
       </tbody>
     </table>
   </div>
 </div>
+
+<% if(total){ %>
+  <div class="mt-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div class="text-secondary small"><%= first %>–<%= last %> von <%= total %> <%= total===1?'Eintrag':'Einträgen' %><%= month?' im '+monthLabel(month):'' %></div>
+    <% if(pages>1){ %>
+      <nav aria-label="Seiten">
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item <%= page<=1?'disabled':'' %>"><a class="page-link" href="<%= pageLink(page-1) %>" <%= page<=1?'tabindex="-1" aria-disabled="true"':'' %>>Zurück</a></li>
+          <% const from=Math.max(1,Math.min(page-2,pages-4)), to=Math.min(pages,from+4); %>
+          <% if(from>1){ %><li class="page-item"><a class="page-link" href="<%= pageLink(1) %>">1</a></li><% if(from>2){ %><li class="page-item disabled"><span class="page-link">…</span></li><% } %><% } %>
+          <% for(let n=from;n<=to;n++){ %><li class="page-item <%= n===page?'active':'' %>"><a class="page-link" href="<%= pageLink(n) %>" <%= n===page?'aria-current="page"':'' %>><%= n %></a></li><% } %>
+          <% if(to<pages){ %><% if(to<pages-1){ %><li class="page-item disabled"><span class="page-link">…</span></li><% } %><li class="page-item"><a class="page-link" href="<%= pageLink(pages) %>"><%= pages %></a></li><% } %>
+          <li class="page-item <%= page>=pages?'disabled':'' %>"><a class="page-link" href="<%= pageLink(page+1) %>" <%= page>=pages?'tabindex="-1" aria-disabled="true"':'' %>>Weiter</a></li>
+        </ul>
+      </nav>
+      <a class="btn btn-sm btn-outline-secondary" href="<%= linkWith({sort, per:'all', page:null}) %>">Alle <%= total %> auf einer Seite</a>
+    <% } %>
+  </div>
+<% } %>
 
 <div class="mt-3 d-flex gap-2"><a class="btn btn-outline-secondary" href="/export/csv">CSV</a><a class="btn btn-outline-secondary" href="/export/xlsx">XLSX</a><a class="btn btn-outline-secondary" href="/export/pdf">PDF</a></div>
 
