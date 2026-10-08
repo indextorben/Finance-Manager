@@ -80,3 +80,17 @@ curl -I http://localhost:3000/css/app.css
 - Oberfläche und Formularbeschriftungen wurden weiter auf Deutsch vereinheitlicht.
 - Konten besitzen eine eigene Verwaltung mit Anfangssaldo/Startkapital und berechnetem aktuellem Saldo.
 - Einnahmen (`/income`) und Ausgaben (`/expenses`) sind eigenständige Bereiche mit jeweils passender Erfassungsmaske und gefilterter Liste.
+
+## Persönliches Finanz-Cockpit
+
+Das Dashboard bietet Zeitraum- und Kontofilter, Vermögensentwicklung, Cashflow-Vergleiche, Ausgabenkategorien, Monatsbudgets, bekannte kommende Zahlungen und regelbasierte Insights. Filter bleiben in der Benutzersitzung erhalten. Unter **Dashboard anpassen** lassen sich Bereiche ausblenden, per Pfeiltaste oder am Desktop per Griff umordnen, speichern und auf das Standardlayout zurücksetzen. Bestehende GridStack-Layouts werden übernommen und um neue Bereiche ergänzt.
+
+Kontosalden und Vermögen enthalten Anfangssalden und ausschließlich bezahlte, nicht archivierte Buchungen bis zum ausgewählten Stichtag. Das Zahlungsdatum hat Vorrang vor dem Buchungsdatum. Die Kontenverwaltung nutzt dieselbe Saldoberechnung. Offene Einnahmen und verknüpfte Rechnungen werden separat und ohne Doppelzählung als Forderungen ausgewiesen. Währungen werden einzeln ausgewertet; Buchungen ohne Konto verwenden die Profilwährung.
+
+Laufende Kalenderzeiträume vergleichen denselben Abschnitt im vorherigen Zeitraum, abgeschlossene Monate/Jahre den vollständigen vorherigen Monat/das vorherige Jahr. Benutzerdefinierte Zeiträume vergleichen die gleiche Anzahl vorheriger Tage. Cashflow ist Einnahmen minus Ausgaben; die Sparrate verwendet nur positiven Cashflow und bleibt bei fehlenden Einnahmen undefiniert. Die Steuerrücklage ist ausdrücklich eine Schätzung aus dem positiven steuerrelevanten geschäftlichen Nettoüberschuss und dem hinterlegten Rücklagensatz.
+
+Monatsbudgets werden im vorhandenen `budgets`-Modell und in der Profilwährung gespeichert. Sie gelten für den Monat des ausgewählten Zeitraumendes. Ein Kontofilter begrenzt den angezeigten Verbrauch. Vorhandene Kategoriebudgets bleiben erhalten und werden zusätzlich angezeigt.
+
+Die Monatsendprognose berücksichtigt aktive Standardbuchungen einschließlich mehrfacher Wochenintervalle, bekannte offene oder künftig datierte Zahlungen und unverknüpfte offene Rechnungen mit Fälligkeit bis Monatsende. Bereits erfasste passende Zahlungen ersetzen Standardbuchungs-Erinnerungen. Überfällige Standardbuchungen werden als ungeklärte Termine ausgewiesen und ausgelassen. Ungeplante Ausgaben und Rechnungen ohne bekanntes Fälligkeitsdatum werden nicht hochgerechnet.
+
+Alle Dashboard-Daten werden serverseitig in einer konsistenten PostgreSQL-Lesesitzung aggregiert; der Browser erhält begrenzte Transaktionslisten und aggregierte Diagrammdaten. Es werden keine neuen Abhängigkeiten oder Datenbankmigrationen benötigt. Die Finanzlogik wird mit `npm test` geprüft.

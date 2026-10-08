@@ -1,0 +1,2 @@
+<header class="panel-heading"><div><h2>Finanzielle Insights</h2><p>Was deine Zahlen zeigen</p></div><i class="bi bi-lightbulb" aria-hidden="true"></i></header>
+<% if(d.insights.length){ %><ul class="insights-list"><% d.insights.forEach(i=>{ %><li><span class="insight-icon"><i class="bi bi-<%= i.icon %>" aria-hidden="true"></i></span><p><%= i.text %></p></li><% }) %></ul><% }else{ %><div class="dashboard-empty compact"><p>Für aussagekräftige Insights fehlen noch bezahlte Transaktionen.</p></div><% } %>
