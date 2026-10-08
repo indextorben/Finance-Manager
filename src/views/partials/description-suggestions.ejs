@@ -1,2 +1,10 @@
-<%# Vorschläge für die Beschreibung – data-category merkt sich die zuletzt genutzte Kategorie. %>
-<datalist id="descriptionSuggestions"><% (locals.descriptions||[]).forEach(d=>{ %><option value="<%= d.description %>"<%- d.category_id?` data-category="${String(d.category_id).replace(/[^0-9a-fA-F-]/g,'')}"`:'' %>></option><% }) %></datalist>
+<%#
+  Vorschlaege fuer die Beschreibung. Jede Option traegt die Werte der letzten Buchung:
+  data-category die Kategorie, data-net/-tax/-gross die Betraege. data-template=1 markiert
+  einen Preis, der aus einer Standardbuchung stammt.
+%>
+<%
+  const suggestAttr=(name,value)=>value===null||value===undefined?'':` data-${name}="${String(value).replace(/[^0-9a-fA-F.-]/g,'')}"`;
+  const suggestAmount=value=>{const n=Number(value);return Number.isFinite(n)?n.toFixed(2):null};
+%>
+<datalist id="descriptionSuggestions"><% (locals.descriptions||[]).forEach(d=>{ %><option value="<%= d.description %>"<%- suggestAttr('category',d.category_id) %><%- suggestAttr('net',suggestAmount(d.net)) %><%- suggestAttr('tax',suggestAmount(d.tax)) %><%- suggestAttr('gross',suggestAmount(d.gross)) %><%- d.template?' data-template="1"':'' %>></option><% }) %></datalist>

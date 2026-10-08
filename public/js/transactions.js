@@ -14,8 +14,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('#editDate').value = data.date;
     document.querySelector('#editDescription').value = data.description;
     const amount = value => window.FinanceForms ? window.FinanceForms.formatAmount(value) : value;
-    document.querySelector('#editNet').value = amount(data.net);
-    document.querySelector('#editTax').value = amount(data.tax);
+    // Die gespeicherten Betraege der Buchung gelten als gesetzt: ein Beschreibungs-
+    // vorschlag darf sie nicht ersetzen.
+    [['#editNet', data.net], ['#editTax', data.tax]].forEach(([selector, value]) => {
+      const field = document.querySelector(selector);
+      field.value = amount(value);
+      field.dataset.userAmount = '1';
+    });
     document.querySelector('#editScope').value = data.scope;
     document.querySelector('#editStatus').value = data.status;
     const account = document.querySelector('#editAccount');

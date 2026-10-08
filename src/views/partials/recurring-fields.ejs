@@ -1,0 +1,22 @@
+<%#
+  Felder einer Standardbuchung – gleich beim Anlegen und beim Bearbeiten.
+  locals.idPrefix trennt die Feld-Ids der beiden Dialoge.
+%>
+<%
+  const fieldId = locals.idPrefix || 'recurring';
+  const templateOn = locals.templateOn !== false;
+%>
+<div class="row g-3">
+  <div class="col-md-6"><label class="form-label" for="<%= fieldId %>Type">Typ</label><select name="type" id="<%= fieldId %>Type" class="form-select"><option value="expense">Ausgabe</option><option value="income">Einnahme</option></select></div>
+  <div class="col-md-6"><label class="form-label" for="<%= fieldId %>Amount">Betrag</label><div class="input-group"><input name="amount" id="<%= fieldId %>Amount" class="form-control" data-money data-min-amount="0.01" data-suggest-amount="gross" placeholder="0,00" required><span class="input-group-text">€</span></div><div class="form-text">Tausenderpunkte werden automatisch gesetzt – für Cent einfach Komma tippen.</div></div>
+  <div class="col-12"><label class="form-label" for="<%= fieldId %>Description">Beschreibung</label><input name="description" id="<%= fieldId %>Description" class="form-control" list="descriptionSuggestions" autocomplete="off" placeholder="z. B. Gehalt oder Netflix" maxlength="200" required><div class="form-text">Bereits genutzte Beschreibungen werden vorgeschlagen – Kategorie und Betrag der letzten Buchung werden dabei übernommen.</div></div>
+  <div class="col-md-6"><label class="form-label" for="<%= fieldId %>Frequency">Intervall</label><select name="frequency" id="<%= fieldId %>Frequency" class="form-select"><option value="monthly">Monatlich</option><option value="weekly">Wöchentlich</option><option value="quarterly">Vierteljährlich</option><option value="yearly">Jährlich</option></select></div>
+  <div class="col-md-6"><label class="form-label" for="<%= fieldId %>Date">Nächster Termin</label><input name="next_date" id="<%= fieldId %>Date" type="date" class="form-control" required><div class="form-text">Nur ein Merkposten – buchen lässt sich die Standardbuchung jederzeit.</div></div>
+  <div class="col-md-6"><label class="form-label" for="<%= fieldId %>Account">Konto</label><select name="account_id" id="<%= fieldId %>Account" class="form-select" data-main-account="<%= mainAccountId %>"><option value="" <%= mainAccountId?'':'selected' %>>Ohne Konto</option><% accounts.forEach(x=>{ %><option value="<%= x.id %>" <%= x.id===mainAccountId?'selected':'' %>><%= x.name %></option><% }) %></select></div>
+  <div class="col-md-6"><%- include('category-select',{categories,id:fieldId+'Category'}) %></div>
+  <div class="col-12 form-check ms-2">
+    <input class="form-check-input" type="checkbox" name="price_template" id="<%= fieldId %>Template" <%= templateOn?'checked':'' %>>
+    <label class="form-check-label" for="<%= fieldId %>Template">Betrag als Preisvorlage verwenden</label>
+    <div class="form-text">Wird diese Beschreibung in einer Buchung eingetippt, schlägt das Formular diesen Betrag vor – praktisch für Beträge, die jeden Monat an einem anderen Tag anfallen.</div>
+  </div>
+</div>
